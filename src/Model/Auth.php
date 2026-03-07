@@ -172,7 +172,7 @@ class Auth extends Model
      */
     public function authenticateWithRememberMe($remember_me)
     {
-        $remember_me = @unserialize($remember_me);
+        $remember_me = @json_decode($remember_me, true);
 
         if (!$remember_me) {
             throw new WrongKeyException();
@@ -247,7 +247,7 @@ class Auth extends Model
             'last_login' => time()
         ]);
 
-        return serialize(['user_id' => $this->user->getId(), 'login_id' => $login_id, 'login_hash' => $login_hash]);
+        return json_encode(['user_id' => $this->user->getId(), 'login_id' => $login_id, 'login_hash' => $login_hash]);
     }
 
     public function hasAccess($area)
