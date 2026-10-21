@@ -153,12 +153,26 @@ class SchemaManager
      */
     public function commit()
     {
-        $this->connection->beginTransaction();
+        $inTransaction = false;
+
+        try {
+            $this->connection->beginTransaction();
+            $inTransaction = true;
+        } catch (\Exception $e) {
+        }
 
         foreach ($this->getChanges() as $sql) {
             $this->connection->query($sql);
         }
 
-        $this->connection->commit();
+        if ($inTransaction) {
+            try {
+                $this->connection->commit();
+            } catch (\Exception $e) {
+                if (stripos($e->getMessage(), 'no active transaction') === false) {
+                    throw $e;
+                }
+            }
+        }
     }
 }

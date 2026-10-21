@@ -124,8 +124,14 @@ class Context implements ContextInterface
 
         if ('cli' !== php_sapi_name()) {
             error_reporting(-1);
-            $this->error_handler = ErrorHandler::register();
-            $this->error_handler->setLogger($this->logger_trace);
+
+            // Symfony\Component\Debug\ErrorHandler is deprecated and problematic on PHP 8.1+.
+            // We skip it on modern PHP and rely on PHP's native error handling + our ExceptionHandler.
+            if (PHP_VERSION_ID < 80000) {
+                $this->error_handler = ErrorHandler::register();
+                $this->error_handler->setLogger($this->logger_trace);
+            }
+
             $this->exception_handler = ExceptionHandler::register(false);
             $this->exception_handler->setLogger($this->logger);
             $this->exception_handler->setLoggerTrace($this->logger_trace);
@@ -232,7 +238,7 @@ class Context implements ContextInterface
         return $this->container->get($service);
     }
 
-    public function handleWeb(Request $request = null)
+    public function handleWeb(?Request $request = null)
     {
         if ($request === null) {
             // create the request from the globals if we don't have custom input

@@ -31,7 +31,7 @@ class ControllerResolver extends \Symfony\Component\HttpKernel\Controller\Contro
      * @param Context $context
      * @param LoggerInterface $logger A LoggerInterface instance
      */
-    public function __construct(Context $context, LoggerInterface $logger = null)
+    public function __construct(Context $context, ?LoggerInterface $logger = null)
     {
         $this->context = $context;
         $this->logger = $logger;

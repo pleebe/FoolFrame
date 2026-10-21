@@ -295,7 +295,10 @@ public function toString()
                     case 'checkbox_array':
                         $data_form = array();
                         if (!isset($item['value'])) {
-                            if($unserialized = unserialize($this->getPreferences()->get(str_replace(',', '.', $name)))) {
+                            $pref_key = str_replace(',', '.', $name);
+                            $pref_value = $this->getPreferences()->get($pref_key);
+
+                            if (!empty($pref_value) && ($unserialized = @unserialize($pref_value))) {
                                 $item['value'] = $unserialized;
                             } else {
                                 $item['value'] = array();

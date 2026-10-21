@@ -36,18 +36,17 @@ class ExceptionHandler extends \Symfony\Component\Debug\ExceptionHandler
     }
 
     /**
-     * Sends a response for the given Exception.
+     * Sends a response for the given Throwable (Exception or Error).
      *
-     * If you have the Symfony HttpFoundation component installed,
-     * this method will use it to create and send the response. If not,
-     * it will fallback to plain PHP functions.
+     * Updated for PHP 7+ / PHP 8+ compatibility. Old code only accepted \Exception,
+     * which caused a fatal error when a real \Error (e.g. TypeError) was thrown.
      *
-     * @param \Exception $exception An \Exception instance
+     * @param \Throwable $exception A \Throwable instance (Exception or Error)
      *
      * @see sendPhpResponse
      * @see createResponse
      */
-    public function handle(\Exception $exception)
+    public function handle(\Throwable $exception)
     {
         if ($this->logger !== null) {
             $this->logger->error($exception->getMessage());
@@ -64,17 +63,31 @@ class ExceptionHandler extends \Symfony\Component\Debug\ExceptionHandler
                     $string .= 'in '. $trace['class'].$trace['type'];
                 }
                 if (isset($trace['function'])) {
-                    $string .= $trace['function'].'('.$this->stringify($trace['args']).')';
+                    $args = $trace['args'] ?? [];
+                    $string .= $trace['function'].'('.$this->stringify($args).')';
                 }
                 $string .= "\r\n";
             }
             $this->logger_trace->error($string);
         }
 
-        if (class_exists('Symfony\Component\HttpFoundation\Response')) {
-            $this->createResponse($exception)->send();
+        if ($exception instanceof \Exception) {
+            // Old Symfony 2.8 ExceptionHandler only understands \Exception, not \Error
+            if (class_exists('Symfony\Component\HttpFoundation\Response')) {
+                $this->createResponse($exception)->send();
+            } else {
+                $this->sendPhpResponse($exception);
+            }
         } else {
-            $this->sendPhpResponse($exception);
+            // We got a real Error (TypeError, etc.). The old Symfony code can't handle it.
+            // Send a minimal error page so the user at least sees something useful.
+            if (!headers_sent()) {
+                header('HTTP/1.1 500 Internal Server Error');
+            }
+            echo '<h1>Application Error</h1>';
+            echo '<p><strong>' . htmlspecialchars($exception->getMessage()) . '</strong></p>';
+            echo '<pre>' . htmlspecialchars($exception->getTraceAsString()) . '</pre>';
+            exit(1);
         }
     }
 
@@ -90,6 +103,10 @@ class ExceptionHandler extends \Symfony\Component\Debug\ExceptionHandler
     {
         if ($depth > 2) {
             return '[...]';
+        }
+
+        if (!is_array($array)) {
+            return '[]';
         }
 
         $result = [];

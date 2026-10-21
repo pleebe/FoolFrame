@@ -18,7 +18,9 @@ class Form
 
     public function __call($name, $args)
     {
-        return call_user_func_array([$this, 'generic'], ['type' => $name] + $args);
+        // PHP 8+ compatible version
+        $options = $args[0] ?? [];
+        return $this->generic($name, $options);
     }
 
     public function open($args = false, $hidden = [])
@@ -37,7 +39,7 @@ class Form
         $s = '<form'.$this->expandArgs($args).'>';
 
         foreach($hidden as $name => $value) {
-            $s .= '<input type="hidden" name="'.htmlentities($name).'" value="'.htmlentities($value).'">';
+            $s .= '<input type="hidden" name="'.htmlentities($name).'" value="'.htmlentities($value ?? '').'">';
         }
 
         return $s;
@@ -89,7 +91,7 @@ class Form
             unset($args['value']);
         }
 
-        return '<textarea'.$this->expandArgs($args).'>'.htmlspecialchars($value).'</textarea>';
+        return '<textarea'.$this->expandArgs($args).'>'.htmlspecialchars($value ?? '').'</textarea>';
     }
 
     public function select($field, $default, $values, $args = [])
@@ -101,7 +103,7 @@ class Form
         $s .= $this->expandArgs($args).'>';
 
         foreach ($values  as $key => $value) {
-            $s .= '<option value="'.htmlentities($key).'"'.($default === $key ? ' selected' : '').'>'.htmlspecialchars($value).'</option>';
+            $s .= '<option value="'.htmlentities($key).'"'.($default === $key ? ' selected' : '').'>'.htmlspecialchars($value ?? '').'</option>';
         }
 
         $s .= '</select>';
@@ -141,13 +143,14 @@ class Form
 
     public function label($text, $for)
     {
-        return '<label for="'.htmlentities($for).'">'.htmlspecialchars($text).'</label>';
+        return '<label for="'.htmlentities($for ?? '').'">'.htmlspecialchars($text ?? '').'</label>';
     }
 
     protected function expandArgs($args)
     {
         $s = '';
         foreach($args as $key => $value) {
+            $value = $value ?? '';
             $s .= ' '.htmlentities($key). '="'.htmlentities($value).'"';
         }
 

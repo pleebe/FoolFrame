@@ -1,6 +1,7 @@
 {
     "name": "foolz/foolframe",
     "description": "Administration panel and some utilities",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Foolz",
@@ -8,7 +9,23 @@
         }
     ],
     "require": {
-
+        "php": "^8.1",
+        "symfony/http-foundation": "2.8.*",
+        "symfony/http-kernel": "2.8.*",
+        "symfony/routing": "2.8.*",
+        "symfony/event-dispatcher": "2.8.*",
+        "symfony/dependency-injection": "2.8.*",
+        "symfony/console": "2.8.*",
+        "symfony/debug": "2.8.*",
+        "symfony/validator": "2.8.*",
+        "monolog/monolog": "^2.0 || ^3.0",
+        "doctrine/dbal": "^2.13 || ^3.0"
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.0"
+        },
+        "sort-packages": true
     },
     "autoload": {
         "psr-4": {"Foolz\\FoolFrame\\": "src/"}

@@ -4,6 +4,7 @@ namespace Foolz\FoolFrame\Model;
 
 use Foolz\FoolFrame\Model\Context;
 
+#[\AllowDynamicProperties]
 class Model
 {
     /**
